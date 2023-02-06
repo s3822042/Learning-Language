@@ -13,13 +13,14 @@ export default defineComponent({
     <label>You could use one of below feature</label>
     <div class="grid-container">
       <BaseBox
-        title="Flashcard"
-        message="You can setup your own flashcard"
-        url="flashcard"
+        title="Vocabulary Checker"
+        message="You can check word matches between languages"
+        url="vocabulary-checker"
       ></BaseBox>
       <BaseBox
-        title="Vocabulary"
-        message="You can create your own vocabulary database"
+        title="Search Vocabulary"
+        message="You can search vocabulary across multiple language"
+        url="search-vocabulary"
       ></BaseBox>
       <BaseBox
         title="Progress"

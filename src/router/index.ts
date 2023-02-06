@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
-import FlashCardView from "@/views/FlashCardView.vue";
+import VocabularyCheckerView from "@/views/VocabularyCheckerView.vue";
+import SearchVocabularyView from "@/views/SearchVocabularyView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,9 +12,14 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/flashcard",
-      name: "flashcard",
-      component: FlashCardView,
+      path: "/vocabulary-checker",
+      name: "checker",
+      component: VocabularyCheckerView,
+    },
+    {
+      path: "/search-vocabulary",
+      name: "search",
+      component: SearchVocabularyView,
     },
   ],
 });
