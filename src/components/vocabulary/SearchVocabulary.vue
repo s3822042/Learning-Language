@@ -1,67 +1,101 @@
 <template>
-  <h3>Currently supported English only</h3>
   <div>
     <select v-model="selectedLanguage">
-      <option value="en">English</option>
-      <option value="fr">French</option>
-      <option value="de">German</option>
+      <option v-for="(languageName, code) in languageNames" :value="code">
+        {{ languageName }}
+      </option>
     </select>
     <input type="text" v-model="searchTerm" />
     <button @click="searchVocabulary">Search</button>
-    <div v-if="!hasError && results.length">
-      <h3>Definitions:</h3>
-      <ul v-for="result in results">
-        <li v-for="meaning in result.meanings">
-          <strong>{{ meaning.partOfSpeech }}:</strong>
-          <ul>
-            <li v-for="definition in meaning.definitions">
-              {{ definition.definition }}
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <div v-else-if="hasError">{{ error }}</div>
+    <h3>Definitions for {{ vocabularyName }}</h3>
+    <ul v-if="wordDetails.n_results > 0">
+      <li v-for="result in wordDetails.results">
+        <p>Headword: {{ result[0].headword.text }}</p>
+        <p>Part of Speech: {{ result[0].headword.pos }}</p>
+        <ul>
+          <li v-for="sense in result[0].senses">
+            <p>Definition: {{ sense.definition }}</p>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p v-else>No results found</p>
   </div>
 </template>
-<script>
+<script lang="ts">
 import axios from "axios";
+import { defineComponent } from "vue";
 
-export default {
+export default defineComponent({
   data() {
     return {
       selectedLanguage: "en",
       searchTerm: "",
       hasError: false,
+      languageNames: {},
       error: "",
-      results: [
-        {
-          meanings: [],
-          partOfSpeech: "",
-        },
-      ],
+      vocabularyName: "",
+      wordDetails: {
+        n_results: 0,
+        results: [
+          {
+            headword: {
+              text: "",
+              pos: "",
+            },
+          },
+          {
+            senses: [
+              {
+                definition: "",
+              },
+            ],
+          },
+        ],
+      },
     };
   },
+
+  created() {
+    this.fetchAllLanguages();
+  },
   methods: {
+    async fetchAllLanguages() {
+      const response = await axios.get(
+        `${import.meta.env.VITE_DICTIONARY_URL}/languages`,
+        {
+          headers: {
+            "X-RapidAPI-Host": `${import.meta.env.VITE_DICTIONARY_HOST}`,
+            "X-RapidAPI-Key": `${import.meta.env.VITE_VOCABULARY_KEY}`,
+          },
+        }
+      );
+      this.languageNames = response.data.language_names;
+    },
     async searchVocabulary() {
       await axios
-        .get(
-          `https://api.dictionaryapi.dev/api/v2/entries/${this.selectedLanguage}/${this.searchTerm}`
-        )
+        .get(`${import.meta.env.VITE_DICTIONARY_URL}/search`, {
+          params: {
+            text: this.searchTerm,
+            language: this.selectedLanguage,
+          },
+          headers: {
+            "X-RapidAPI-Host": `${import.meta.env.VITE_DICTIONARY_HOST}`,
+            "X-RapidAPI-Key": `${import.meta.env.VITE_VOCABULARY_KEY}`,
+          },
+        })
         .then((response) => {
-          this.results = response.data;
-          this.meanings = this.results.meanings;
+          this.wordDetails.n_results = response.data.n_results;
+          this.wordDetails = response.data;
           this.hasError = false;
         })
-        .catch((e) => {
-          if (e.response.status === 404) {
-            this.hasError = true;
-            this.error = e.response.data.title;
-          }
+        .catch((error) => {
+          this.hasError = true;
+          this.error = error;
         });
     },
   },
-};
+});
 </script>
 
 <style scoped>
